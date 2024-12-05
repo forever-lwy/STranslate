@@ -6,11 +6,11 @@ permissions:
   contents: write
 
 on:
-  release:
-    types: [published]
-  # push:
-  #   tags:
-  #     - "*" # Push events to matching *, i.e. 1.0, 20.15.10
+  # release:
+  #   types: [published]
+  push:
+    tags:
+      - "*" # Push events to matching *, i.e. 1.0, 20.15.10
 
 jobs:
   # 以下为构建工作流
