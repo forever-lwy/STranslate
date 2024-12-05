@@ -303,7 +303,7 @@ public class ConfigHelper
         StartupOperate(CurrentConfig.IsStartup);
         if (!isThemeSame)
         {
-            await ThemeOperateAsync(CurrentConfig.ThemeType);
+            await Task.Run(() => ThemeOperate(CurrentConfig.ThemeType));
         }
         ProxyOperate(
             CurrentConfig.ProxyMethod,
@@ -607,11 +607,6 @@ public class ConfigHelper
     {
         Singleton<ThemeHelper>.Instance.SetTheme(themeType);
     }
-    
-    private async Task ThemeOperateAsync(ThemeType themeType)
-    {
-        await Task.Run(() => Singleton<ThemeHelper>.Instance.SetTheme(themeType));
-    }
 
     /// <summary>
     ///     初始化字体
@@ -709,7 +704,12 @@ public class ConfigHelper
     /// <param name="isStayView"></param>
     public void MainViewStayOperate(bool isStayView)
     {
-        Application.Current.MainWindow!.ShowInTaskbar = isStayView;
+        var window = Application.Current.MainWindow ?? Application.Current.Windows.OfType<MainView>().First();
+        window.ShowInTaskbar = isStayView;
+        if (isStayView)
+            WindowHelper.ShowInAltTab(window);
+        else
+            WindowHelper.HideFromAltTab(window);
     }
 
     /// <summary>
