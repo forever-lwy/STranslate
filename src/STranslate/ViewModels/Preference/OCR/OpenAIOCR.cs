@@ -81,24 +81,49 @@ public partial class OpenAIOCR : ObservableObject, IOCR
     [ObservableProperty]
     [property: DefaultValue("")]
     [property: JsonProperty(DefaultValueHandling = DefaultValueHandling.Ignore)]
-    private string _model = "gpt-4o-2024-08-06";
+    private string _customModel = string.Empty;
+
+    [JsonIgnore]
+    [ObservableProperty]
+    [property: DefaultValue("")]
+    [property: JsonProperty(DefaultValueHandling = DefaultValueHandling.Ignore)]
+    private string _model = "gpt-4-vision-preview";
 
     /// <summary>
-    ///     <see href="https://platform.openai.com/docs/guides/structured-outputs#supported-models"/>
+    ///     支持的模型列表
     /// </summary>
     [JsonIgnore]
     public List<string> Models { get; set; } =
     [
+        "gpt-4-vision-preview",
         "gpt-4o-2024-08-06",
         "gpt-4o-mini-2024-07-18"
     ];
-    
+
+    [JsonIgnore]
+    public string SelectedModel 
+    {
+        get => string.IsNullOrWhiteSpace(CustomModel) ? Model : CustomModel;
+        set 
+        {
+            if(Models.Contains(value))
+            {
+                Model = value;
+                CustomModel = string.Empty;
+            }
+            else
+            {
+                CustomModel = value;
+            }
+        }
+    }
+
     [JsonIgnore]
     [ObservableProperty]
     [property: DefaultValue("")]
     [property: JsonProperty(DefaultValueHandling = DefaultValueHandling.Ignore)]
     private string _systemPrompt = "You are a specialized OCR engine that accurately extracts each text from the image.";
-    
+
     [JsonIgnore]
     [ObservableProperty]
     [property: DefaultValue("")]
@@ -154,7 +179,7 @@ public partial class OpenAIOCR : ObservableObject, IOCR
         // 温度限定
         var aTemperature = Math.Clamp(Temperature, 0, 2);
 
-        var openAiModel = Model.Trim();
+        var openAiModel = SelectedModel.Trim();
         var base64Str = Convert.ToBase64String(bytes);
         
         var messages = new List<object>();
@@ -192,41 +217,6 @@ public partial class OpenAIOCR : ObservableObject, IOCR
             model = openAiModel,
             messages = messages.ToArray(),
             temperature = aTemperature,
-            response_format = new
-            {
-                type = "json_schema",
-                json_schema = new
-                {
-                    name = "ocr_response",
-                    strict = true,
-                    schema = new
-                    {
-                        type = "object",
-                        properties = new
-                        {
-                            words_result = new
-                            {
-                                type = "array",
-                                items = new
-                                {
-                                    type = "object",
-                                    properties = new
-                                    {
-                                        words = new
-                                        {
-                                            type = "string"
-                                        }
-                                    },
-                                    required = new[] { "words" },
-                                    additionalProperties = false
-                                }
-                            }
-                        },
-                        required = new[] { "words_result" },
-                        additionalProperties = false
-                    }
-                }
-            }
         };
 
         #endregion
@@ -237,30 +227,18 @@ public partial class OpenAIOCR : ObservableObject, IOCR
 
         var headers = new Dictionary<string, string> { { "Authorization", $"Bearer {AppKey}" } };
 
-        // 提取content的值
         var ocrResult = new OcrResult();
         var resp = await HttpUtil.PostAsync(uriBuilder.Uri.AbsoluteUri, jsonData, null, headers, cancelToken)
             .ConfigureAwait(false);
         if (string.IsNullOrEmpty(resp))
             throw new Exception("请求结果为空");
 
-        // 解析JSON数据
-        var rawData = JsonConvert.DeserializeObject<JObject>(resp)?["choices"]?[0]?["message"]?["content"] ??
-                        throw new Exception($"反序列化失败: {resp}");
-        var parsedData = JsonConvert.DeserializeObject<Root>(rawData.ToString()) ??
-                            throw new Exception($"反序列化失败: {resp}");
+        // 解析AI回答内容
+        var content = JsonConvert.DeserializeObject<JObject>(resp)?["choices"]?[0]?["message"]?["content"]?.ToString() ??
+                        throw new Exception($"解析失败: {resp}");
 
-        foreach (var item in parsedData.words_result)
-        {
-            var content = new OcrContent(item.words);
-            Converter(item.location).ForEach(pg =>
-            {
-                //仅位置不全为0时添加
-                if (!pg.X.Equals(pg.Y) || pg.X != 0)
-                    content.BoxPoints.Add(new BoxPoint(pg.X, pg.Y));
-            });
-            ocrResult.OcrContents.Add(content);
-        }
+        // 将AI回答作为一个OCR结果
+        ocrResult.OcrContents.Add(new OcrContent(content));
         
         return ocrResult;
     }
@@ -279,6 +257,7 @@ public partial class OpenAIOCR : ObservableObject, IOCR
             AppKey = AppKey,
             Icons = Icons,
             Model = Model,
+            CustomModel = CustomModel,
             SystemPrompt = SystemPrompt,
             UserPrompt = UserPrompt
         };
