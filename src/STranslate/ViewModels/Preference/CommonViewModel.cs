@@ -448,7 +448,7 @@ public partial class CommonViewModel : ObservableObject
     public event Action<bool, bool, bool>? OnBooleansChanged;
 
     [RelayCommand]
-    private Task SaveAsync()
+    private async Task SaveAsync()
     {
         // 保存时如果未开启丢失焦点不隐藏则关闭最小化按钮配置
         if (!StayMainViewWhenLoseFocus && ShowMinimalBtn)
@@ -460,7 +460,7 @@ public partial class CommonViewModel : ObservableObject
             LogService.Logger.Info("关闭丢失焦点不隐藏取消显示最小化按钮");
         }
 
-        if (ConfigHelper.WriteConfig(this))
+        if (await ConfigHelper.WriteConfigAsync(this))
         {
             OnBooleansChanged?.Invoke(IncrementalTranslation, AutoTranslate, IsOnlyShowRet);
             ToastHelper.Show("保存常规配置成功", WindowType.Preference);
@@ -470,8 +470,6 @@ public partial class CommonViewModel : ObservableObject
             LogService.Logger.Debug($"保存常规配置失败，{JsonConvert.SerializeObject(this)}");
             ToastHelper.Show("保存常规配置失败", WindowType.Preference);
         }
-
-        return Task.CompletedTask;
     }
 
     [RelayCommand]
@@ -528,6 +526,7 @@ public partial class CommonViewModel : ObservableObject
         DisableGlobalHotkeys = ConfigHelper.CurrentConfig?.DisableGlobalHotkeys ?? false;
         MainViewMaxHeight = ConfigHelper.CurrentConfig?.MainViewMaxHeight ?? 840;
         MainViewWidth = ConfigHelper.CurrentConfig?.MainViewWidth ?? 460;
+        InputViewHeight = ConfigHelper.CurrentConfig?.InputViewHeight ?? 70;
         MainViewShadow = ConfigHelper.CurrentConfig?.MainViewShadow ?? false;
         IsPromptToggleVisible = ConfigHelper.CurrentConfig?.IsPromptToggleVisible ?? true;
         IsShowSnakeCopyBtn = ConfigHelper.CurrentConfig?.IsShowSnakeCopyBtn ?? true;
@@ -602,6 +601,11 @@ public partial class CommonViewModel : ObservableObject
     ///     主界面最大高度
     /// </summary>
     [ObservableProperty] private double _mainViewMaxHeight = ConfigHelper.CurrentConfig?.MainViewMaxHeight ?? 840;
+    
+    /// <summary>
+    ///     输入界面高度
+    /// </summary>
+    [ObservableProperty] private double _inputViewHeight = ConfigHelper.CurrentConfig?.InputViewHeight ?? 70;
 
     /// <summary>
     ///     主界面宽度

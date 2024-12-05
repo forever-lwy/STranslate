@@ -211,13 +211,14 @@ public class ConfigHelper
     /// </summary>
     /// <param name="model"></param>
     /// <returns></returns>
-    public bool WriteConfig(CommonViewModel model)
+    public async Task<bool> WriteConfigAsync(CommonViewModel model)
     {
         var isSuccess = false;
         if (CurrentConfig is null)
             return isSuccess;
         //判断是否相同,避免重复注册
         var isHotkeyConfSame = CurrentConfig.DisableGlobalHotkeys == model.DisableGlobalHotkeys;
+        var isThemeSame = CurrentConfig.ThemeType == model.ThemeType;
         CurrentConfig.IsStartup = model.IsStartup;
         CurrentConfig.NeedAdministrator = model.NeedAdmin;
         CurrentConfig.HistorySize = model.HistorySize;
@@ -270,6 +271,7 @@ public class ConfigHelper
         CurrentConfig.DisableGlobalHotkeys = model.DisableGlobalHotkeys;
         CurrentConfig.MainViewMaxHeight = model.MainViewMaxHeight;
         CurrentConfig.MainViewWidth = model.MainViewWidth;
+        CurrentConfig.InputViewHeight = model.InputViewHeight;
         CurrentConfig.MainViewShadow = model.MainViewShadow;
         CurrentConfig.IsPromptToggleVisible = model.IsPromptToggleVisible;
         CurrentConfig.IsShowSnakeCopyBtn = model.IsShowSnakeCopyBtn;
@@ -295,12 +297,14 @@ public class ConfigHelper
         CurrentConfig.SourceLangIfAuto = model.SourceLangIfAuto;
         CurrentConfig.TargetLangIfSourceZh = model.TargetLangIfSourceZh;
         CurrentConfig.TargetLangIfSourceNotZh = model.TargetLangIfSourceNotZh;
-
         ShowLangViewOnShowRetOperate(CurrentConfig.IsOnlyShowRet, CurrentConfig.IsHideLangWhenOnlyShowOutput);
 
         //重新执行必要操作
         StartupOperate(CurrentConfig.IsStartup);
-        ThemeOperate(CurrentConfig.ThemeType);
+        if (!isThemeSame)
+        {
+            await ThemeOperateAsync(CurrentConfig.ThemeType);
+        }
         ProxyOperate(
             CurrentConfig.ProxyMethod,
             CurrentConfig.ProxyIp,
@@ -329,7 +333,7 @@ public class ConfigHelper
 
         AutoTrasnalteOperate(CurrentConfig.AutoTranslate);
 
-        WriteConfig(CurrentConfig);
+        await WriteConfigAsync(CurrentConfig);
         isSuccess = true;
         return isSuccess;
     }
@@ -469,6 +473,13 @@ public class ConfigHelper
         Encryption(copy);
         File.WriteAllText(Constant.CnfFullName, JsonConvert.SerializeObject(copy, Formatting.Indented));
     }
+    
+    private async Task WriteConfigAsync(ConfigModel conf)
+    {
+        var copy = conf.Clone();
+        Encryption(copy);
+        await File.WriteAllTextAsync(Constant.CnfFullName, JsonConvert.SerializeObject(copy, Formatting.Indented));
+    }
 
     /// <summary>
     ///     加密
@@ -595,6 +606,11 @@ public class ConfigHelper
     private void ThemeOperate(ThemeType themeType)
     {
         Singleton<ThemeHelper>.Instance.SetTheme(themeType);
+    }
+    
+    private async Task ThemeOperateAsync(ThemeType themeType)
+    {
+        await Task.Run(() => Singleton<ThemeHelper>.Instance.SetTheme(themeType));
     }
 
     /// <summary>
@@ -828,6 +844,7 @@ public class ConfigHelper
             DisableGlobalHotkeys = false,
             MainViewMaxHeight = 840,
             MainViewWidth = 460,
+            InputViewHeight = 70,
             MainViewShadow = false,
             IsPromptToggleVisible = true,
             IsShowSnakeCopyBtn = false,
