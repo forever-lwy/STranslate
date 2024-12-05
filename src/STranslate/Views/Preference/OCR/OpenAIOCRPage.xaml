@@ -82,7 +82,9 @@
                         HorizontalAlignment="Left"
                         BorderThickness="1"
                         ItemsSource="{Binding Models}"
-                        SelectedItem="{Binding Model, UpdateSourceTrigger=PropertyChanged, Mode=TwoWay}" />
+                        SelectedItem="{Binding Model}"
+                        IsEditable="{Binding IsEditable}"
+                        Text="{Binding Model, UpdateSourceTrigger=PropertyChanged}"/>
                 </Grid>
 
                 <Grid Margin="0,10">

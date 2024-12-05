@@ -6,6 +6,7 @@ using Newtonsoft.Json.Linq;
 using STranslate.Log;
 using STranslate.Model;
 using STranslate.Util;
+using System.Collections.ObjectModel; // 添加这行
 
 namespace STranslate.ViewModels.Preference.OCR;
 
@@ -81,54 +82,35 @@ public partial class OpenAIOCR : ObservableObject, IOCR
     [ObservableProperty]
     [property: DefaultValue("")]
     [property: JsonProperty(DefaultValueHandling = DefaultValueHandling.Ignore)]
-    private string _customModel = string.Empty;
-
-    [JsonIgnore]
-    [ObservableProperty]
-    [property: DefaultValue("")]
-    [property: JsonProperty(DefaultValueHandling = DefaultValueHandling.Ignore)]
-    private string _model = "gpt-4-vision-preview";
+    private string _model = "gpt-4o-2024-08-06";
 
     /// <summary>
-    ///     支持的模型列表
+    ///     <see href="https://platform.openai.com/docs/guides/structured-outputs#supported-models"/>
     /// </summary>
     [JsonIgnore]
-    public List<string> Models { get; set; } =
-    [
-        "gpt-4-vision-preview",
-        "gpt-4o-2024-08-06",
-        "gpt-4o-mini-2024-07-18"
-    ];
-
-    [JsonIgnore]
-    public string SelectedModel 
+    public ObservableCollection<string> Models { get; set; } = new()
     {
-        get => string.IsNullOrWhiteSpace(CustomModel) ? Model : CustomModel;
-        set 
-        {
-            if(Models.Contains(value))
-            {
-                Model = value;
-                CustomModel = string.Empty;
-            }
-            else
-            {
-                CustomModel = value;
-            }
-        }
-    }
+        "gpt-4o-2024-08-06",
+        "gpt-4o-2024-11-20", 
+        "claude-3-5-sonnet-20241022",
+        "gemini-1.5-pro-latest",
+        "gpt-4o-mini-2024-07-18"
+    };
 
     [JsonIgnore]
     [ObservableProperty]
     [property: DefaultValue("")]
     [property: JsonProperty(DefaultValueHandling = DefaultValueHandling.Ignore)]
     private string _systemPrompt = "You are a specialized OCR engine that accurately extracts each text from the image.";
-
+    
     [JsonIgnore]
     [ObservableProperty]
     [property: DefaultValue("")]
     [property: JsonProperty(DefaultValueHandling = DefaultValueHandling.Ignore)]
     private string _userPrompt = "Please recognize the text in the picture, the language in the picture is $target";
+
+    [JsonIgnore]
+    public bool IsEditable => true;
 
     #endregion
 
@@ -179,7 +161,7 @@ public partial class OpenAIOCR : ObservableObject, IOCR
         // 温度限定
         var aTemperature = Math.Clamp(Temperature, 0, 2);
 
-        var openAiModel = SelectedModel.Trim();
+        var openAiModel = Model.Trim();
         var base64Str = Convert.ToBase64String(bytes);
         
         var messages = new List<object>();
@@ -257,7 +239,6 @@ public partial class OpenAIOCR : ObservableObject, IOCR
             AppKey = AppKey,
             Icons = Icons,
             Model = Model,
-            CustomModel = CustomModel,
             SystemPrompt = SystemPrompt,
             UserPrompt = UserPrompt
         };
