@@ -76,15 +76,12 @@
                     </Grid.ColumnDefinitions>
                     <TextBlock Text="模型: " />
 
-                    <ComboBox
+                    <common:PlaceholderTextBox
                         Grid.Column="1"
-                        MinWidth="120"
+                        MinWidth="206"
                         HorizontalAlignment="Left"
-                        BorderThickness="1"
-                        ItemsSource="{Binding Models}"
-                        SelectedItem="{Binding Model}"
-                        IsEditable="{Binding IsEditable}"
-                        Text="{Binding Model, UpdateSourceTrigger=PropertyChanged}"/>
+                        Placeholder="gpt-4o-2024-11-20"
+                        Text="{Binding Model, UpdateSourceTrigger=PropertyChanged, Mode=TwoWay}" />
                 </Grid>
 
                 <Grid Margin="0,10">

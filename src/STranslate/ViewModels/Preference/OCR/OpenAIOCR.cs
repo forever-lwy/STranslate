@@ -82,20 +82,20 @@ public partial class OpenAIOCR : ObservableObject, IOCR
     [ObservableProperty]
     [property: DefaultValue("")]
     [property: JsonProperty(DefaultValueHandling = DefaultValueHandling.Ignore)]
-    private string _model = "gpt-4o-2024-08-06";
+    private string _model = "gpt-4o-2024-11-20";
 
     /// <summary>
     ///     <see href="https://platform.openai.com/docs/guides/structured-outputs#supported-models"/>
     /// </summary>
-    [JsonIgnore]
-    public ObservableCollection<string> Models { get; set; } = new()
-    {
-        "gpt-4o-2024-08-06",
-        "gpt-4o-2024-11-20", 
-        "claude-3-5-sonnet-20241022",
-        "gemini-1.5-pro-latest",
-        "gpt-4o-mini-2024-07-18"
-    };
+    // [JsonIgnore]
+    // public ObservableCollection<string> Models { get; set; } = new()
+    // {
+    //     "gpt-4o-2024-08-06",
+    //     "gpt-4o-2024-11-20", 
+    //     "claude-3-5-sonnet-20241022",
+    //     "gemini-1.5-pro-latest",
+    //     "gpt-4o-mini-2024-07-18"
+    // };
 
     [JsonIgnore]
     [ObservableProperty]
@@ -161,7 +161,10 @@ public partial class OpenAIOCR : ObservableObject, IOCR
         // 温度限定
         var aTemperature = Math.Clamp(Temperature, 0, 2);
 
+        
         var openAiModel = Model.Trim();
+        openAiModel = string.IsNullOrEmpty(openAiModel) ? "gpt-4o-2024-11-20" : openAiModel;
+
         var base64Str = Convert.ToBase64String(bytes);
         
         var messages = new List<object>();
