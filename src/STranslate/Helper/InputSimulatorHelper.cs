@@ -1,4 +1,5 @@
-﻿using WindowsInput;
+﻿using STranslate.Util;
+using WindowsInput;
 
 namespace STranslate.Helper;
 
@@ -37,6 +38,19 @@ public class InputSimulatorHelper
             // 模拟按下回车键，除了最后一行
             if (!line.Equals(lines.Last())) InputSimulator.Keyboard.KeyPress(VirtualKeyCode.RETURN);
         }
+    }
+
+    /// <summary>
+    ///     使用粘贴输出
+    ///     * 避免部分用户无法正常输出的问题
+    /// </summary>
+    /// <param name="content"></param>
+    public static void PrintTextWithClipboard(string content)
+    {
+        // 检查内容是否为空或仅包含空白字符
+        if (string.IsNullOrEmpty(content)) return;
+        ClipboardHelper.Copy(content);
+        ClipboardUtil.SendCtrlCV(false);
     }
 
     public static void Backspace(int count = 1)

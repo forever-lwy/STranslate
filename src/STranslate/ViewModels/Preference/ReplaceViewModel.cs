@@ -62,7 +62,7 @@ public partial class ReplaceViewModel : ObservableObject
 
         try
         {
-            CursorManager.Execute();
+            CursorManager.Instance.Execute();
             // Determine target language
             var (sourceLang, targetLang) = await DetectLanguageAsync(content, token);
 
@@ -82,13 +82,13 @@ public partial class ReplaceViewModel : ObservableObject
         {
             Singleton<NotifyIconViewModel>.Instance.ShowBalloonTip("替换翻译失败, 请检查网络或日志");
             LogService.Logger.Warn("替换翻译 Error: " + ex.Message);
-            CursorManager.Error();
+            CursorManager.Instance.Error();
             await Task.Delay(2000);
         }
         finally
         {
             LogService.Logger.Debug("<End> 替换翻译");
-            CursorManager.Restore();
+            CursorManager.Instance.Restore();
             _replaceCts = null;
         }
     }
@@ -124,25 +124,38 @@ public partial class ReplaceViewModel : ObservableObject
         var ret = await ReplaceProp.ActiveService!.TranslateAsync(req, CancellationToken.None);
 
         if (!ret.IsSuccess) throw new Exception(ret.Result);
-        InputSimulatorHelper.PrintText(ret.Result);
+
+
+        // 判断是否使用粘贴输出
+        if (_configHelper.CurrentConfig?.UsePasteOutput ?? false)
+            InputSimulatorHelper.PrintTextWithClipboard(ret.Result);
+        else
+            InputSimulatorHelper.PrintText(ret.Result);
     }
 
     private async Task TranslateLlmAsync(RequestModel req, CancellationToken token)
     {
-        var count = 0;
+        var result = "";
         try
         {
             await ReplaceProp.ActiveService!.TranslateAsync(req,
                 msg =>
                 {
-                    count += msg.Length; // 计算已输出长度
+                    result += msg;
+                    if (_configHelper.CurrentConfig?.UsePasteOutput ?? false)
+                        return;
+
                     InputSimulatorHelper.PrintText(msg);
                 }, token);
+
+            // 回调结束后判断是否需要使用剪贴板输出
+            if (_configHelper.CurrentConfig?.UsePasteOutput ?? false)
+                InputSimulatorHelper.PrintTextWithClipboard(result);
         }
         catch (Exception)
         {
             // 出错则移除已输出内容
-            InputSimulatorHelper.Backspace(count);
+            InputSimulatorHelper.Backspace(result.Length);
             throw;
         }
     }

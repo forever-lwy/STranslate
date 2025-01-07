@@ -48,7 +48,8 @@ public partial class TranslatorViewModel : ObservableObject
         //添加默认支持服务
         TransServices.Add(new TranslatorSTranslate());
         TransServices.Add(new TranslatorEcdict());
-        TransServices.Add(new TranslatorApi());
+        TransServices.Add(new TranslatorGoogleBuiltin());
+        TransServices.Add(new TranslatorDeepLX());
         TransServices.Add(new TranslatorOpenAI());
         TransServices.Add(new TranslatorGemini());
         TransServices.Add(new TranslatorAli());
@@ -133,7 +134,7 @@ public partial class TranslatorViewModel : ObservableObject
         var name = service.Type switch
         {
             ServiceType.STranslateService => $"{head}{nameof(TranslatorSTranslatePage)}",
-            ServiceType.ApiService => $"{head}{nameof(TranslatorApiPage)}",
+            ServiceType.GoogleBuiltinService => $"{head}{nameof(TranslatorGoogleBuiltinPage)}",
             ServiceType.BaiduService => $"{head}{nameof(TranslatorBaiduPage)}",
             ServiceType.MicrosoftService => $"{head}{nameof(TranslatorMicrosoftPage)}",
             ServiceType.OpenAIService => $"{head}{nameof(TranslatorOpenAIPage)}",
@@ -154,6 +155,7 @@ public partial class TranslatorViewModel : ObservableObject
             ServiceType.DeepSeekService => $"{head}{nameof(TranslatorDeepSeekPage)}",
             ServiceType.KingSoftDictService => $"{head}{nameof(TranslatorKingSoftDictPage)}",
             ServiceType.BingDictService => $"{head}{nameof(TranslatorBingDictPage)}",
+            ServiceType.DeepLXService => $"{head}{nameof(TranslatorDeepLXPage)}",
             //TODO: 新接口需要适配
             _ => $"{head}{nameof(TranslatorSTranslatePage)}"
         };
@@ -171,7 +173,7 @@ public partial class TranslatorViewModel : ObservableObject
             CurTransServiceList.Add(service switch
             {
                 TranslatorSTranslate stranslate => stranslate.Clone(),
-                TranslatorApi api => api.Clone(),
+                TranslatorGoogleBuiltin api => api.Clone(),
                 TranslatorBaidu baidu => baidu.Clone(),
                 TranslatorMicrosoft bing => bing.Clone(),
                 TranslatorOpenAI openAi => openAi.Clone(),
@@ -192,6 +194,7 @@ public partial class TranslatorViewModel : ObservableObject
                 TranslatorDeepSeek deepSeek => deepSeek.Clone(),
                 TranslatorKingSoftDict kingsoftdict => kingsoftdict.Clone(),
                 TranslatorBingDict bingdict => bingdict.Clone(),
+                TranslatorDeepLX deeplx => deeplx.Clone(),
                 //TODO: 新接口需要适配
                 _ => throw new InvalidOperationException($"Unsupported service type: {service.GetType().Name}")
             });

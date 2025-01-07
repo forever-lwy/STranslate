@@ -298,6 +298,7 @@ public class ConfigHelper
         CurrentConfig.SourceLangIfAuto = model.SourceLangIfAuto;
         CurrentConfig.TargetLangIfSourceZh = model.TargetLangIfSourceZh;
         CurrentConfig.TargetLangIfSourceNotZh = model.TargetLangIfSourceNotZh;
+        CurrentConfig.UsePasteOutput = model.UsePasteOutput;
         ShowLangViewOnShowRetOperate(CurrentConfig.IsOnlyShowRet, CurrentConfig.IsHideLangWhenOnlyShowOutput);
 
         //重新执行必要操作
@@ -405,7 +406,7 @@ public class ConfigHelper
             };
             var content = File.ReadAllText(configPath);
             var config = JsonConvert.DeserializeObject<ConfigModel>(content, settings) ??
-                         throw new Exception("反序列化失败...");
+                        throw new Exception("反序列化失败...");
             Decryption(config);
             return true;
         }
@@ -431,7 +432,7 @@ public class ConfigHelper
             };
             var content = File.ReadAllText(Constant.CnfFullName);
             var config = JsonConvert.DeserializeObject<ConfigModel>(content, settings) ??
-                         throw new Exception("反序列化失败...");
+                        throw new Exception("反序列化失败...");
             Decryption(config);
             return config;
         }
@@ -860,7 +861,7 @@ public class ConfigHelper
             OftenUsedLang = string.Empty,
             UseCacheLocation = false,
             ShowMinimalBtn = false,
-            GlobalFontSize = GlobalFontSizeEnum.General,
+            GlobalFontSize = GlobalFontSizeEnum.VerySmall,
             AutoTranslate = false,
             IsShowAutoTranslate = false,
             AnimationSpeed = AnimationSpeedEnum.Middle,
@@ -870,19 +871,19 @@ public class ConfigHelper
             SourceLangIfAuto = LangEnum.en,
             TargetLangIfSourceZh = LangEnum.en,
             TargetLangIfSourceNotZh = LangEnum.zh_cn,
+            UsePasteOutput = false,
             ReplaceProp = new ReplaceProp(),
             Services =
             [
-                new TranslatorSTranslate(Guid.NewGuid(), "", "STranslate"),
-                new TranslatorApi(Guid.NewGuid(), "https://googlet.deno.dev/translate", "Google", IconType.Google),
+                new TranslatorSTranslate(),
+                new TranslatorGoogleBuiltin(),
                 new TranslatorKingSoftDict(),
                 new TranslatorBingDict(),
-                new TranslatorApi(Guid.NewGuid(), "https://deeplx.deno.dev/translate", "DeepL", isEnabled: false)
             ],
             OCRList =
             [
+                new WeChatOCR(),
                 new PaddleOCR(),
-                new WeChatOCR()
             ],
             TTSList =
             [
@@ -919,6 +920,7 @@ public class OCRConverter : JsonConverter<IOCR>
             (int)OCRType.GoogleOCR => new GoogleOCR(),
             (int)OCRType.OpenAIOCR => new OpenAIOCR(),
             (int)OCRType.WeChatOCR => new WeChatOCR(),
+            (int)OCRType.GeminiOCR => new GeminiOCR(),
             _ => throw new NotSupportedException($"Unsupported OCRServiceType: {type}")
         };
 
@@ -1032,7 +1034,7 @@ public class TranslatorConverter : JsonConverter<ITranslator>
         ITranslator translator = type switch
         {
             (int)ServiceType.STranslateService => new TranslatorSTranslate(),
-            (int)ServiceType.ApiService => new TranslatorApi(),
+            (int)ServiceType.GoogleBuiltinService => new TranslatorGoogleBuiltin(),
             (int)ServiceType.BaiduService => new TranslatorBaidu(),
             (int)ServiceType.MicrosoftService => new TranslatorMicrosoft(),
             (int)ServiceType.OpenAIService => new TranslatorOpenAI(),
@@ -1053,6 +1055,7 @@ public class TranslatorConverter : JsonConverter<ITranslator>
             (int)ServiceType.DeepSeekService => new TranslatorDeepSeek(),
             (int)ServiceType.KingSoftDictService => new TranslatorKingSoftDict(),
             (int)ServiceType.BingDictService => new TranslatorBingDict(),
+            (int)ServiceType.DeepLXService => new TranslatorDeepLX(),
             //TODO: 新接口需要适配
             _ => throw new NotSupportedException($"Unsupported ServiceType: {type}")
         };

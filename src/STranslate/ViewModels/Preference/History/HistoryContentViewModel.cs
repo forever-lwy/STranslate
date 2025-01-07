@@ -109,7 +109,7 @@ public class HistoryTranslatorConverter : JsonConverter<ITranslator>
         ITranslator translator = type switch
         {
             (int)ServiceType.STranslateService => new TranslatorSTranslate(),
-            (int)ServiceType.ApiService => new TranslatorApi(),
+            (int)ServiceType.GoogleBuiltinService => new TranslatorGoogleBuiltin(),
             (int)ServiceType.BaiduService => new TranslatorBaidu(),
             (int)ServiceType.MicrosoftService => new TranslatorMicrosoft(),
             (int)ServiceType.OpenAIService => new TranslatorOpenAI(),
@@ -130,6 +130,7 @@ public class HistoryTranslatorConverter : JsonConverter<ITranslator>
             (int)ServiceType.DeepSeekService => new TranslatorDeepSeek(),
             (int)ServiceType.KingSoftDictService => new TranslatorKingSoftDict(),
             (int)ServiceType.BingDictService => new TranslatorBingDict(),
+            (int)ServiceType.DeepLXService => new TranslatorDeepLX(),
             //TODO: 新接口需要适配
             _ => throw new NotSupportedException($"Unsupported ServiceType: {type}")
         };

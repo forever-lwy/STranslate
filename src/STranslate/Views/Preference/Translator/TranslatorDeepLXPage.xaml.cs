@@ -2,13 +2,9 @@
 using STranslate.Model;
 
 namespace STranslate.Views.Preference.Translator;
-
-/// <summary>
-///     TranslatorApiPage.xaml 的交互逻辑
-/// </summary>
-public partial class TranslatorApiPage : UserControl
+public partial class TranslatorDeepLXPage : UserControl
 {
-    public TranslatorApiPage(ITranslator vm)
+    public TranslatorDeepLXPage(ITranslator vm)
     {
         InitializeComponent();
 

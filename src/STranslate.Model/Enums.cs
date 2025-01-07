@@ -141,7 +141,7 @@ public enum ActionType
 /// </summary>
 public enum ServiceType
 {
-    ApiService = 0,
+    DeepLXService = 0,
     BaiduService,
     MicrosoftService,
     OpenAIService,
@@ -163,6 +163,7 @@ public enum ServiceType
     DeepSeekService,
     KingSoftDictService,
     BingDictService,
+    GoogleBuiltinService,
 }
 
 public enum TTSType
@@ -190,6 +191,7 @@ public enum OCRType
     [Description("谷歌OCR")] GoogleOCR,
     [Description("OpenAIOCR")] OpenAIOCR,
     [Description("微信OCR")] WeChatOCR,
+    [Description("GeminiOCR")] GeminiOCR,
 }
 
 public enum BaiduOCRAction
